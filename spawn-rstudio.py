@@ -15,7 +15,7 @@ RUN useradd -m -s /bin/bash -u {{uid}} -U {{username}} \\
     && echo "{{username}}:{{password}}" | chpasswd
 
 RUN if [ -z "$(which rstudio-server)" ]; then \\
-        apt install -y gdebi-core \\
+        apt update && apt install -y gdebi-core \\
         && . /etc/os-release \\
         && wget https://download2.rstudio.org/server/${VERSION_CODENAME}/amd64/rstudio-server-2023.12.1-402-amd64.deb \\
         && gdebi -n rstudio-server-2023.12.1-402-amd64.deb; \\
@@ -73,7 +73,7 @@ def build_and_run(rendered_dockerfile, image_name, args):
     docker_command = ['docker', 'run', '-d', '-u', f'{args.uid}:{args.uid}', '-w', f'/home/{args.username}', '--name', args.name, '-p', f"{args.port}:8787"]
     volumes = args.volumes.split(",")
     for volume in volumes:
-        docker_command.extend(["-v",f"{volume}:{volume}"])
+        docker_command.extend(["-v",f"{volume}:/host/{volume}"])
     docker_command.append(args.name)
     # Run the Docker container in detached mode
     subprocess.run(docker_command, check=True)
